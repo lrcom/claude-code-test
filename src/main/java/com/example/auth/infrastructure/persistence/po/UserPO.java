@@ -1,7 +1,8 @@
 package com.example.auth.infrastructure.persistence.po;
 
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.auth.domain.model.UserStatus;
-import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
@@ -10,34 +11,22 @@ import java.time.LocalDateTime;
  * <p>
  * 仅用于数据库映射，与领域模型解耦。
  */
-@Entity
-@Table(name = "users", indexes = {
-        @Index(name = "idx_users_email", columnList = "email", unique = true),
-        @Index(name = "idx_users_username", columnList = "username", unique = true)
-})
+@TableName("users")
 public class UserPO {
 
-    @Id
-    @Column(length = 36)
+    @TableId
     private String id;
 
-    @Column(nullable = false, unique = true, length = 32)
     private String username;
 
-    @Column(nullable = false, unique = true, length = 128)
     private String email;
 
-    @Column(nullable = false, length = 128)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 16)
     private UserStatus status;
 
-    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     public UserPO() {

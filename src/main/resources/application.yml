@@ -13,28 +13,26 @@ spring:
       enabled: true
 
   # -------------------------------------------------------------------------
-  # 数据源：默认使用 H2 内存数据库（无需任何安装）
-  # 生产环境切换 MySQL：注释掉 h2 配置，启用 mysql 配置
+  # 数据源：H2 文件模式（服务重启后数据不丢失）
+  # 生产环境切换 MySQL：--spring.profiles.active=prod
   # -------------------------------------------------------------------------
   datasource:
-    url: jdbc:h2:mem:authdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    url: jdbc:h2:file:./data/authdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
+  # -------------------------------------------------------------------------
+  # SQL 初始化：schema.sql 在每次启动时执行（IF NOT EXISTS 保证幂等）
+  # -------------------------------------------------------------------------
+  sql:
+    init:
+      mode: always
 
   h2:
     console:
       enabled: true
       path: /h2-console
-
-  jpa:
-    hibernate:
-      ddl-auto: create-drop    # 生产环境改为 validate 或 none
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
 
   # -------------------------------------------------------------------------
   # Spring Cloud Alibaba - Nacos（默认关闭，启动 Nacos 后改为 true）
@@ -50,6 +48,14 @@ spring:
         enabled: false
         server-addr: 127.0.0.1:8848
         file-extension: yaml
+
+# -------------------------------------------------------------------------
+# MyBatis-Plus
+# -------------------------------------------------------------------------
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 # -------------------------------------------------------------------------
 # JWT 配置
@@ -78,12 +84,9 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:password}
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+  sql:
+    init:
+      mode: never    # 生产环境由 DBA 管理 DDL
   cloud:
     nacos:
       discovery:
