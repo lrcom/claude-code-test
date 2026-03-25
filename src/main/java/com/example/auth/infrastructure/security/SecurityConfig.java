@@ -45,7 +45,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/h2-console/**",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/",
+                                "/*.html"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>欢迎</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #f0f2f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* 顶部导航栏 */
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar-brand {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1677ff;
+    }
+
+    .navbar-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #1677ff;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .btn-logout {
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #555;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-logout:hover { border-color: #ff4d4f; color: #ff4d4f; }
+
+    /* 主内容区 */
+    .main {
+      max-width: 720px;
+      margin: 48px auto;
+      padding: 0 16px;
+    }
+
+    /* 欢迎横幅 */
+    .welcome-banner {
+      background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+      border-radius: 16px;
+      padding: 40px 36px;
+      color: #fff;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-banner::after {
+      content: '';
+      position: absolute;
+      right: -30px;
+      top: -30px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .welcome-banner::before {
+      content: '';
+      position: absolute;
+      right: 60px;
+      bottom: -50px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .welcome-banner h2 {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .welcome-banner p {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    /* 信息卡片 */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .info-item label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .info-item .value {
+      font-size: 14px;
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      background: #f0f9eb;
+      color: #389e0d;
+      border: 1px solid #b7eb8f;
+    }
+
+    /* 加载 & 错误状态 */
+    .skeleton {
+      height: 16px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 4px;
+      width: 60%;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    .error-hint {
+      font-size: 13px;
+      color: #cf1322;
+      text-align: center;
+      padding: 16px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <span class="navbar-brand">Auth Service</span>
+    <div class="navbar-user">
+      <div class="avatar" id="avatarLetter">?</div>
+      <span id="navUsername">加载中...</span>
+      <button class="btn-logout" onclick="logout()">退出登录</button>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <main class="main">
+
+    <!-- 欢迎横幅 -->
+    <div class="welcome-banner">
+      <h2 id="welcomeTitle">欢迎回来！</h2>
+      <p id="welcomeSubtitle">正在加载您的信息...</p>
+    </div>
+
+    <!-- 用户信息卡片 -->
+    <div class="card">
+      <div class="card-title">账号信息</div>
+      <div class="info-grid" id="infoGrid">
+        <div class="info-item">
+          <label>用户名</label>
+          <div class="skeleton" id="skelUsername"></div>
+          <div class="value" id="infoUsername" style="display:none"></div>
+        </div>
+        <div class="info-item">
+          <label>邮箱</label>
+          <div class="skeleton" id="skelEmail"></div>
+          <div class="value" id="infoEmail" style="display:none"></div>
+        </div>
+        <div class="info-item">
+          <label>用户 ID</label>
+          <div class="skeleton" id="skelId"></div>
+          <div class="value" id="infoUserId" style="display:none"></div>
+        </div>
+        <div class="info-item">
+          <label>注册时间</label>
+          <div class="skeleton" id="skelCreated"></div>
+          <div class="value" id="infoCreatedAt" style="display:none"></div>
+        </div>
+        <div class="info-item">
+          <label>账号状态</label>
+          <span class="tag">正常</span>
+        </div>
+      </div>
+      <div class="error-hint" id="errorHint" style="display:none">加载失败，请刷新页面重试</div>
+    </div>
+
+  </main>
+
+  <script>
+    const API_WELCOME = '/api/user/welcome';
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    }
+
+    function formatDate(isoStr) {
+      if (!isoStr) return '-';
+      const d = new Date(isoStr);
+      return d.toLocaleString('zh-CN', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function hideSkeleton() {
+      ['skelUsername', 'skelEmail', 'skelId', 'skelCreated'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      ['infoUsername', 'infoEmail', 'infoUserId', 'infoCreatedAt'].forEach(id => {
+        document.getElementById(id).style.display = 'block';
+      });
+    }
+
+    async function loadWelcome() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      try {
+        const res = await fetch(API_WELCOME, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const data = await res.json();
+
+        if (res.ok && data.code === 200) {
+          const u = data.data;
+          const firstLetter = (u.username || '?').charAt(0).toUpperCase();
+
+          // 导航栏
+          document.getElementById('avatarLetter').textContent = firstLetter;
+          document.getElementById('navUsername').textContent = u.username;
+
+          // 欢迎横幅
+          document.getElementById('welcomeTitle').textContent = `欢迎回来，${u.username}！`;
+          document.getElementById('welcomeSubtitle').textContent =
+            `登录时间：${new Date().toLocaleString('zh-CN')}`;
+
+          // 信息卡片
+          document.getElementById('infoUsername').textContent = u.username;
+          document.getElementById('infoEmail').textContent = u.email;
+          document.getElementById('infoUserId').textContent = u.userId;
+          document.getElementById('infoCreatedAt').textContent = formatDate(u.createdAt);
+
+          hideSkeleton();
+        } else {
+          throw new Error(data.message || '请求失败');
+        }
+      } catch (err) {
+        document.getElementById('errorHint').style.display = 'block';
+        ['skelUsername', 'skelEmail', 'skelId', 'skelCreated'].forEach(id => {
+          document.getElementById(id).style.display = 'none';
+        });
+      }
+    }
+
+    loadWelcome();
+  </script>
+</body>
+</html>

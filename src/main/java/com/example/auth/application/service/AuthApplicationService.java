@@ -3,6 +3,7 @@ package com.example.auth.application.service;
 import com.example.auth.application.command.LoginCommand;
 import com.example.auth.application.command.RegisterCommand;
 import com.example.auth.application.dto.LoginResult;
+import com.example.auth.application.dto.UserInfo;
 import com.example.auth.application.port.TokenService;
 import com.example.auth.domain.event.DomainEvent;
 import com.example.auth.domain.model.User;
@@ -87,5 +88,16 @@ public class AuthApplicationService {
 
     private void publishEvents(List<DomainEvent> events) {
         events.forEach(eventPublisher::publishEvent);
+    }
+
+    /**
+     * 查询用户信息
+     */
+    @Transactional(readOnly = true)
+    public UserInfo getUserById(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        return new UserInfo(user.getId().getValue(), user.getUsername(),
+                user.getEmail().getValue(), user.getCreatedAt());
     }
 }
