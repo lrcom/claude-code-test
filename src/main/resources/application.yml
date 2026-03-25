@@ -1,0 +1,85 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: auth-service
+
+  # -------------------------------------------------------------------------
+  # 数据源：默认使用 H2 内存数据库（无需任何安装）
+  # 生产环境切换 MySQL：注释掉 h2 配置，启用 mysql 配置
+  # -------------------------------------------------------------------------
+  datasource:
+    url: jdbc:h2:mem:authdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop    # 生产环境改为 validate 或 none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # -------------------------------------------------------------------------
+  # Spring Cloud Alibaba - Nacos（默认关闭，启动 Nacos 后改为 true）
+  # -------------------------------------------------------------------------
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+        server-addr: 127.0.0.1:8848
+        namespace: ""
+        group: DEFAULT_GROUP
+      config:
+        enabled: false
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
+
+# -------------------------------------------------------------------------
+# JWT 配置
+# secret 长度 >= 32 字符（HS256 要求 256 bit）
+# -------------------------------------------------------------------------
+jwt:
+  secret: "auth-service-jwt-secret-key-minimum-32chars!"
+  expiration: 86400000    # 24小时（毫秒）
+
+# -------------------------------------------------------------------------
+# 日志
+# -------------------------------------------------------------------------
+logging:
+  level:
+    com.example.auth: DEBUG
+    org.springframework.security: INFO
+
+---
+# MySQL 生产环境 Profile（使用 --spring.profiles.active=prod 激活）
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
