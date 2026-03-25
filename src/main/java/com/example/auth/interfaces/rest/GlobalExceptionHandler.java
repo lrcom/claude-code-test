@@ -1,5 +1,6 @@
 package com.example.auth.interfaces.rest;
 
+import com.example.auth.domain.exception.AuthException;
 import com.example.auth.interfaces.dto.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,8 @@ import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器
+ * <p>
+ * 使用 JDK 21 pattern matching switch 统一处理 sealed AuthException 层级。
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,20 +35,19 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 业务参数错误（邮箱已注册、用户名已存在、密码错误等）
+     * 领域业务异常（JDK 21 pattern matching switch 穷举所有子类）
      */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
-    }
-
-    /**
-     * 业务状态错误（账号锁定、未激活等）
-     */
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalState(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error(HttpStatus.FORBIDDEN.value(), ex.getMessage()));
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthException(AuthException ex) {
+        int status = switch (ex) {
+            case com.example.auth.domain.exception.UserNotFoundException ignored          -> 404;
+            case com.example.auth.domain.exception.EmailAlreadyExistsException ignored    -> 409;
+            case com.example.auth.domain.exception.UsernameAlreadyExistsException ignored -> 409;
+            case com.example.auth.domain.exception.InvalidPasswordException ignored       -> 400;
+            case com.example.auth.domain.exception.AccountLockedException ignored         -> 403;
+            case com.example.auth.domain.exception.AccountInactiveException ignored       -> 403;
+        };
+        return ResponseEntity.status(status).body(ApiResponse.error(status, ex.getMessage()));
     }
 
     /**
@@ -58,3 +60,4 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(500, "Internal server error"));
     }
 }
+

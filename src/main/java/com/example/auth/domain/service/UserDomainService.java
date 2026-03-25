@@ -1,5 +1,7 @@
 package com.example.auth.domain.service;
 
+import com.example.auth.domain.exception.EmailAlreadyExistsException;
+import com.example.auth.domain.exception.UsernameAlreadyExistsException;
 import com.example.auth.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,16 +24,13 @@ public class UserDomainService {
      */
     public void validateUniqueEmail(String email) {
         if (userRepository.existsByEmail(email.toLowerCase().trim())) {
-            throw new IllegalArgumentException("Email already registered: " + email);
+            throw new EmailAlreadyExistsException(email);
         }
     }
 
-    /**
-     * 校验用户名唯一性
-     */
     public void validateUniqueUsername(String username) {
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username already taken: " + username);
+            throw new UsernameAlreadyExistsException(username);
         }
     }
 }
