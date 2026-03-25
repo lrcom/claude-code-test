@@ -6,6 +6,7 @@ import com.example.auth.application.dto.LoginResult;
 import com.example.auth.application.dto.UserInfo;
 import com.example.auth.application.port.TokenService;
 import com.example.auth.domain.event.DomainEvent;
+import com.example.auth.domain.exception.UserNotFoundException;
 import com.example.auth.domain.model.User;
 import com.example.auth.domain.repository.UserRepository;
 import com.example.auth.domain.service.PasswordEncoder;
@@ -68,7 +69,7 @@ public class AuthApplicationService {
      */
     public LoginResult login(LoginCommand command) {
         User user = userRepository.findByEmail(command.email())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + command.email()));
+                .orElseThrow(() -> new UserNotFoundException(command.email()));
 
         // 业务行为委托给聚合根
         user.login(command.password(), passwordEncoder);
@@ -96,7 +97,7 @@ public class AuthApplicationService {
     @Transactional(readOnly = true)
     public UserInfo getUserById(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         return new UserInfo(user.getId().getValue(), user.getUsername(),
                 user.getEmail().getValue(), user.getCreatedAt());
     }

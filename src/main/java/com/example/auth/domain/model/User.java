@@ -3,6 +3,9 @@ package com.example.auth.domain.model;
 import com.example.auth.domain.event.DomainEvent;
 import com.example.auth.domain.event.UserLoggedInEvent;
 import com.example.auth.domain.event.UserRegisteredEvent;
+import com.example.auth.domain.exception.AccountInactiveException;
+import com.example.auth.domain.exception.AccountLockedException;
+import com.example.auth.domain.exception.InvalidPasswordException;
 import com.example.auth.domain.service.PasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -105,18 +108,19 @@ public class User {
      *
      * @param rawPassword     输入的明文密码
      * @param passwordEncoder 密码编码器
-     * @throws IllegalStateException    账号被锁定或未激活
-     * @throws IllegalArgumentException 密码错误
+     * @throws AccountLockedException   账号被锁定
+     * @throws AccountInactiveException 账号未激活
+     * @throws InvalidPasswordException 密码错误
      */
     public void login(String rawPassword, PasswordEncoder passwordEncoder) {
         if (status == UserStatus.LOCKED) {
-            throw new IllegalStateException("Account is locked");
+            throw new AccountLockedException();
         }
         if (status == UserStatus.INACTIVE) {
-            throw new IllegalStateException("Account is not activated");
+            throw new AccountInactiveException();
         }
         if (!password.matches(rawPassword, passwordEncoder)) {
-            throw new IllegalArgumentException("Invalid password");
+            throw new InvalidPasswordException();
         }
         this.updatedAt = LocalDateTime.now();
         domainEvents.add(new UserLoggedInEvent(id.getValue(), username));
